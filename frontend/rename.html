@@ -72,4 +72,16 @@
         <input type="submit" value="Renommer">
     </form>
 </body>
+<script>
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        var new_username = document.getElementById('new_username').value;
+        var auth = 'Basic ' + btoa(user.username + ':' + user.password);
+        fetch('/user/rename', { method: 'POST', body: JSON.stringify({ new_username: new_username }), headers: { 'Content-Type': 'application/json', 'Authorization': auth } })
+            .then(response => response.json())
+            .then(message => {
+                console.log(message);
+            });
+    });
+    </script>
 </html>

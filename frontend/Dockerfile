@@ -1,10 +1,10 @@
-# Utilisez l'image officielle PostgreSQL
+# Dockerfile de frontend
 FROM postgres:latest
 
-# Définissez les variables d'environnement pour la base de données
-ENV POSTGRES_DB=your_db_name
-ENV POSTGRES_USER=your_db_user
-ENV POSTGRES_PASSWORD=your_db_password
+# Définisser les variables d'environnement pour la base de données
+ENV POSTGRES_DB=StorageDB
+ENV POSTGRES_USER=EmmaDB
+ENV POSTGRES_PASSWORD=1234STORAge!
 
-# Exposez le port sur lequel PostgreSQL écoutera (par défaut : 5432)
+# Exposer le port sur lequel PostgreSQL écoutera (par défaut : 5432)
 EXPOSE 5432

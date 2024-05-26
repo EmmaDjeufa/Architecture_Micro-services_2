@@ -109,12 +109,16 @@
 </body>
 
 <script>
+// Get the user from localStorage
+var user = JSON.parse(localStorage.getItem('user'));
+
 document.getElementById('upload-form').addEventListener('submit', function(event) {
     event.preventDefault();
     var file = document.getElementById('upload-file').files[0];
     var formData = new FormData();
     formData.append('file', file);
-    fetch('/files/' + file.name, { method: 'PUT', body: formData });
+    var auth = 'Basic ' + btoa(user.username + ':' + user.password);
+    fetch('/files/' + file.name, { method: 'PUT', body: formData, headers: { 'Authorization': auth } });
 });
 
 document.getElementById('delete-form').addEventListener('submit', function(event) {
