@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-left: 10px;
+        }
+        h2 {
+            
+            margin-left: 5px;
+        }
+
+        form {
+            width: 600px;
+            height: 200px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-left: 10px;
+        }
+
+        label {
+            display: block;
+            margin-top: 50px;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="file"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        button,
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-right: 5px
+        }
+
+        button:hover,
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>File Management</h1>
+
+    
+    <form id="upload-form">
+        <h2>Upload File</h2>
+        <input type="file" id="upload-file">
+        <br>
+        <br>
+        <button type="submit">Upload</button>
+    </form>
+
+    
+    <form id="delete-form">
+        <h2>Delete File</h2>
+        <input type="text" id="delete-filename" placeholder="Filename">
+        <br>
+        <br>
+        <button type="submit">Delete</button>
+    </form>
+
+    
+    <form id="get-form">
+        <h2>Get File</h2>
+        <input type="text" id="get-filename" placeholder="Filename">
+        <br>
+        <br>
+        <button type="submit">Get</button>
+    </form>
+
+    <h2>List Files</h2>
+    </br>
+    </br>
+    <button id="list-files">List Files</button>
+</body>
+
+<script>
+document.getElementById('upload-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var file = document.getElementById('upload-file').files[0];
+    var formData = new FormData();
+    formData.append('file', file);
+    fetch('/files/' + file.name, { method: 'PUT', body: formData });
+});
+
+document.getElementById('delete-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var filename = document.getElementById('delete-filename').value;
+    fetch('/files/' + filename, { method: 'DELETE' });
+});
+
+document.getElementById('get-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    var filename = document.getElementById('get-filename').value;
+    fetch('/files/' + filename);
+});
+
+document.getElementById('list-files').addEventListener('click', function() {
+    fetch('/files')
+        .then(response => response.json())
+        .then(files => {
+            console.log(files);
+            // Here you can do something with the files, like display them on the page.
+        });
+});
+</script>
+</html>

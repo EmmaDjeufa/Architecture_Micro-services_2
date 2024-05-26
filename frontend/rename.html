@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Renommer l'utilisateur</title>
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    background-color: #e9e9e9; /* changed background color */
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #555; /* changed color */
+            margin-left: 70px;
+        }
+
+        form {
+            width: 700px;
+            height: 200px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 50px;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        input[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #004999; /* changed hover color */
+        }
+    </style>
+</head>
+<body>
+    <h1>Renommer l'utilisateur :</h1>
+    <form action="/user/rename" method="post">
+        <label for="new_username">Nouveau nom d'utilisateur :</label>
+        <input type="text" id="new_username" name="new_username" required>
+        <br>
+        <input type="submit" value="Renommer">
+    </form>
+</body>
+</html>

@@ -7,6 +7,9 @@ from typing import List
 
 app = FastAPI()
 
+# Montez le répertoire contenant vos pages HTML
+app.mount("/", StaticFiles(directory="./webapp/build/", html=True), name="frontend")
+
 # Configuration de la base de données (utilisez vos propres informations de connexion)
 DATABASE_URL = "postgresql://user:password@localhost/dbname"
 engine = create_engine(DATABASE_URL)
@@ -78,3 +81,4 @@ def rename_user(new_username: str, user: User = Depends(authenticate_user)):
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
+

@@ -1,0 +1,30 @@
+version: '3'
+services:
+  api:
+    build:
+      context: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - api-data:/app/data
+    depends_on:
+      - postgres
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/usr/share/nginx/html
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: your_db_name
+      POSTGRES_USER: your_db_user
+      POSTGRES_PASSWORD: your_db_password
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes:
+  api-data:
+  postgres-data:
