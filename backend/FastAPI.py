@@ -1,54 +1,72 @@
-from fastapi import FastAPI, Depends, HTTPException
+# backend/FastAPI.py
+from fastapi import FastAPI, Depends, HTTPException, UploadFile
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from typing import List
 from fastapi.staticfiles import StaticFiles
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from fastapi import UploadFile
 import aiofiles
 import os
+from fastapi import FastAPI
+from starlette.staticfiles import StaticFiles
+
+
 
 class File(BaseModel):
     name: str
+
 app = FastAPI()
 
-# Mount the directory containing your HTML pages
-app.mount("/", StaticFiles(directory="./frontend", html=True), name="frontend")
+# Chemin absolu vers le répertoire frontend
+app.mount("/", StaticFiles(directory="/app/frontend", html=True), name="frontend")
 
-# Database configuration (use your own connection information)
-DATABASE_URL = "postgresql://EmmaDB:1234STORAge!@postgres/StorAgeDB"
+frontend_directory = "/app/frontend"  # ou le chemin relatif correct
+if not os.path.isdir(frontend_directory):
+    raise RuntimeError(f"Directory '{frontend_directory}' does not exist")
+
+app.mount("/", StaticFiles(directory=frontend_directory, html=True), name="frontend")
+
+# Configuration de la base de données (utilisez vos propres informations de connexion)
+DATABASE_URL = "postgresql://EmmaDB:1234STORAge!@postgres/STORAgeDB"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# Model to store user information
+# Modèle pour stocker les informations des utilisateurs
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True)
-    password = Column(String)
+    username = Column(String, unique=True, index=True, nullable=False)
+    password = Column(String, nullable=False)
 
-# Create the table in the database
+# Créer la table dans la base de données
 Base.metadata.create_all(bind=engine)
 
-# HTTP Basic Security
+# Sécurité HTTP Basic
 security = HTTPBasic()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str):
     return pwd_context.hash(password)
 
-# Authentication verification function
-def authenticate_user(credentials: HTTPBasicCredentials = Depends(security)):
-    user = SessionLocal().query(User).filter_by(username=credentials.username).first()
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# Fonction de vérification de l'authentification
+def authenticate_user(credentials: HTTPBasicCredentials = Depends(security), db: Session = Depends(get_db)):
+    user = db.query(User).filter_by(username=credentials.username).first()
     if not user or not pwd_context.verify(credentials.password, user.password):
         raise HTTPException(status_code=401, detail="Unauthorized")
     return user
 
-# Pydantic models
+# Modèles Pydantic
 class UserIn(BaseModel):
     username: str
     password: str
@@ -56,50 +74,56 @@ class UserIn(BaseModel):
 class UserRename(BaseModel):
     new_username: str
 
-# Route to create a user account
+# Route pour créer un compte utilisateur
 @app.post("/user/signup")
-def create_user(user_in: UserIn):
-    db = SessionLocal()
+def create_user(user_in: UserIn, db: Session = Depends(get_db)):
     db_user = User(username=user_in.username, password=get_password_hash(user_in.password))
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return {"message": "User created successfully"}
 
-# Routes protected by authentication
+# Routes protégées par l'authentification
 @app.get("/user/auth")
 def get_user_info(user: User = Depends(authenticate_user)):
     return {"username": user.username, "password_hashed": user.password}
 
 @app.put("/files/{filename}")
-async def upload_file(filename: str, file: UploadFile = File(...), user: User = Depends(authenticate_user)):
+async def upload_file(filename: str, file: UploadFile, user: User = Depends(authenticate_user)):
+    os.makedirs('./files', exist_ok=True)
     async with aiofiles.open(f'./files/{filename}', 'wb') as out_file:
-        content = await file.read()  # async read
-        await out_file.write(content)  # async write
+        content = await file.read()
+        await out_file.write(content)
     return {"message": f"File {filename} uploaded successfully"}
 
 @app.delete("/files/{filename}")
 def delete_file(filename: str, user: User = Depends(authenticate_user)):
-    os.remove(f'./files/{filename}')
-    return {"message": f"File {filename} deleted successfully"}
+    file_path = f'./files/{filename}'
+    if os.path.exists(file_path):
+        os.remove(file_path)
+        return {"message": f"File {filename} deleted successfully"}
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
 
 @app.get("/files/{filename}")
 async def get_file(filename: str, user: User = Depends(authenticate_user)):
-    async with aiofiles.open(f'./files/{filename}', 'r') as in_file:
-        content = await in_file.read()
-    return {"message": f"File {filename} retrieved successfully", "content": content}
+    file_path = f'./files/{filename}'
+    if os.path.exists(file_path):
+        async with aiofiles.open(file_path, 'r') as in_file:
+            content = await in_file.read()
+        return {"message": f"File {filename} retrieved successfully", "content": content}
+    else:
+        raise HTTPException(status_code=404, detail="File not found")
 
-@app.get("/files/{prefix}")
+@app.get("/files/prefix/{prefix}")
 def get_files_by_prefix(prefix: str, user: User = Depends(authenticate_user)):
     files = [f for f in os.listdir('./files') if f.startswith(prefix)]
     return {"message": f"Files under prefix {prefix} retrieved successfully", "files": files}
 
-# Route to rename
 @app.get("/files")
 def list_files(user: User = Depends(authenticate_user)):
     files = os.listdir('./files')
     return {"message": "Files retrieved successfully", "files": files}
-
 
 if __name__ == "__main__":
     import uvicorn

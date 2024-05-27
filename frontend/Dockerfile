@@ -1,10 +1,7 @@
-# Dockerfile de frontend
-FROM postgres:latest
+# frontend/Dockerfile
+FROM nginx:alpine
 
-# Définisser les variables d'environnement pour la base de données
-ENV POSTGRES_DB=StorageDB
-ENV POSTGRES_USER=EmmaDB
-ENV POSTGRES_PASSWORD=1234STORAge!
+COPY . /usr/share/nginx/html
 
-# Exposer le port sur lequel PostgreSQL écoutera (par défaut : 5432)
-EXPOSE 5432
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]

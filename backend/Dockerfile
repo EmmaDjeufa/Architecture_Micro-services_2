@@ -1,17 +1,13 @@
-# Dockerfile de backend
-FROM python:3.8
+# backend/Dockerfile
+FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
-# Définissez le répertoire de travail dans le conteneur
+# Copier les fichiers de backend
+COPY . /app
+
 WORKDIR /app
 
-# Copiez le code source de votre API dans le conteneur
-COPY . .
-
-# Installez les dépendances de votre application
+# Installer les dépendances
 RUN pip install -r requirements.txt
 
-# Exposez le port sur lequel votre API écoutera
-EXPOSE 8000
-
-# Démarrez votre application
-CMD ["python", "FastAPI.py"]
+# Exécuter le script de vérification de la disponibilité de PostgreSQL
+CMD ["sh", "-c", "python wait_for_postgres.py && uvicorn FastAPI:app --host 0.0.0.0 --port 8000"]
