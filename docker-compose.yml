@@ -29,5 +29,15 @@ services:
     environment:
       DATABASE_URL: postgresql://EmmaDB:1234STORAge!@postgres:5432/STORAgeDB
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+
 volumes:
   postgres-data:
