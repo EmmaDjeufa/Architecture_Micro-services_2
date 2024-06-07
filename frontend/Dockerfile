@@ -1,12 +1,17 @@
 # frontend/Dockerfile
-FROM nginx:alpine
+
+FROM python:3.9
 
 
-# Copier le fichier de démarrage du serveur Flask
-COPY server.py /usr/share/nginx/html/server.py
 
+RUN apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y nginx git \
+    && rm -rf /var/www/html/*
 
-COPY . /usr/share/nginx/html
+# Copier les fichiers frontend dans /var/www/html/
+ADD ./* /var/www/html/
 
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 8081
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]
+ 

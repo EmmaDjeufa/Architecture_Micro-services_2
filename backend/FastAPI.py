@@ -1,5 +1,4 @@
-# backend/FastAPI.py
-from fastapi import FastAPI, Depends, HTTPException, UploadFile
+from fastapi import FastAPI, Depends, HTTPException, UploadFile, Form
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
@@ -8,22 +7,14 @@ from typing import List
 from fastapi.staticfiles import StaticFiles
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from fastapi.responses import RedirectResponse
 import aiofiles
 import os
-from fastapi import FastAPI
-from starlette.staticfiles import StaticFiles
-
-
-
-class File(BaseModel):
-    name: str
 
 app = FastAPI()
 
 # Chemin absolu vers le répertoire frontend
-app.mount("/", StaticFiles(directory="/app/frontend", html=True), name="frontend")
-
-frontend_directory = "/app/frontend"  # ou le chemin relatif correct
+frontend_directory = "/app/frontend"
 if not os.path.isdir(frontend_directory):
     raise RuntimeError(f"Directory '{frontend_directory}' does not exist")
 
@@ -75,13 +66,13 @@ class UserRename(BaseModel):
     new_username: str
 
 # Route pour créer un compte utilisateur
-@app.post("/user/signup")
-def create_user(user_in: UserIn, db: Session = Depends(get_db)):
-    db_user = User(username=user_in.username, password=get_password_hash(user_in.password))
+@app.post("user/signup")
+def create_user(username: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    db_user = User(username=username, password=get_password_hash(password))
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return {"message": "User created successfully"}
+    return {"message": "Inscription réussie"}
 
 # Routes protégées par l'authentification
 @app.get("/user/auth")

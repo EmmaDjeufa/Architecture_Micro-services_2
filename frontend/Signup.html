@@ -65,7 +65,7 @@
 </head>
 <body>
     <h1>Inscription d'utilisateur :</h1>
-    <form action="/user/signup" method="post">
+    <form id="Form" action="user/signup" method="post">
         <label for="username">Nom d'utilisateur :</label>
         <input type="text" id="username" name="username" required>
         <br>
@@ -73,8 +73,31 @@
         <input type="password" id="password" name="password" required>
         <br>
         <br>
-        <input type="submit" value="S'inscrire">
+        <input type="submit" value="S'inscrire"  href="/auth.html">
     </form>
 </body>
+
+<script>
+    document.getElementById('Form').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const form = event.target;
+        const formData = new FormData(form);
+        
+        const response = await fetch('user/signup', {
+            method: 'POST',
+            body: formData
+        });
+        console.log("okk", formData)
+        
+        if (response.redirected) {
+            window.location.href = "/auth.html";
+        } else {
+            // Handle errors or show a message to the user
+            const result = await response.json();
+            alert(result.detail || 'Inscription échouée');
+        }
+    });
+</script>
 </html>
+
 
